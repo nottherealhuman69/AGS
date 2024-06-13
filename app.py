@@ -1,7 +1,7 @@
 # app.py
 from flask import Flask, render_template, request, redirect, url_for, send_file
 import os
-from Test import convert_pdf_to_txt
+from Test import get_response
 
 app = Flask(__name__, static_folder='static')
 
@@ -22,17 +22,22 @@ def upload_page():
 @app.route('/process', methods=['POST'])
 def process_pdf():
     pdf_file = request.files['pdf_file']
+    student_file = request.files['student_file']
     txt_filename = request.form['txt_filename']
 
     if pdf_file.filename == '':
+        return redirect(request.url)
+    if student_file.filename == '':
         return redirect(request.url)
 
     if pdf_file and allowed_file(pdf_file.filename):
         pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], pdf_file.filename)
         pdf_file.save(pdf_path)
+        student_path = os.path.join(app.config['UPLOAD_FOLDER'], student_file.filename)
+        student_file.save(student_path)
         dir_file = os.path.join(app.config["OUTPUT_FOLDER"], txt_filename)
         file_path = dir_file+'.txt'
-        summarized_text = convert_pdf_to_txt(pdf_path, file_path)
+        summarized_text = get_response(pdf_path, student_path)
         with open(file_path, 'w') as f:
             f.write(summarized_text)  # You can also write something here if you want to add initial content
 
@@ -49,4 +54,4 @@ def download(filename):
     return send_file(os.path.join(app.config['OUTPUT_FOLDER'], filename), as_attachment=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,host='127.0.0.1', port=9000)
