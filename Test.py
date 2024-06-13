@@ -1,6 +1,6 @@
 import fitz  # PyMuPDF
 import pdfminer
-from pdfminer.high_level import extract_text
+#from pdfminer.high_level import extract_text
 from tika import parser
 import pytesseract
 from PIL import Image
