@@ -134,7 +134,31 @@ https://ai.google.dev/gemini-api/docs/get-started/python
 # Create the model
 # See https://ai.google.dev/api/python/google/generativeai/GenerativeModel
 
-def get_response(text):
+
+
+def convert_pdf_to_txt(pdf_path):
+    text = extract_text_from_pdf(pdf_path)
+    if text is None:
+        print("Standard text extraction failed, trying OCR.")
+        text = handle_scanned_pdf(pdf_path)
+
+    images = extract_images_from_pdf(pdf_path)
+    if images:
+        for i, image in enumerate(images):
+            image_text = ocr_image(image)
+            text += f"\n[Image {i+1}]:\n{image_text}"
+    
+    # Preprocess text
+    tokenized_sentences = preprocess_text(text)
+    
+    # Convert tokenized sentences back to text format
+    final_text = "\n".join([" ".join(tokens) for tokens in tokenized_sentences])
+        # Use GPT-4 to refine the processed text
+    return final_text
+
+def get_response(pdf_path, student_path):
+    pdf_text = convert_pdf_to_txt(pdf_path)
+    student_text = convert_pdf_to_txt(student_path)
     generation_config = {
     "temperature": 1,
     "top_p": 0.95,
@@ -154,30 +178,8 @@ def get_response(text):
         history=[
         ]
         )
-    response = chat_session.send_message(f"Please summarize the following text:\n\n{text}")
+    response = chat_session.send_message(f"Compare the following student answer with the provided answer key and provide a grade and feedback.\n\nAnswer Key:\n{pdf_text}\n\nStudent's Answer:\n{student_text}")
     return response.text
-
-def convert_pdf_to_txt(pdf_path, txt_path):
-    text = extract_text_from_pdf(pdf_path)
-    if text is None:
-        print("Standard text extraction failed, trying OCR.")
-        text = handle_scanned_pdf(pdf_path)
-
-    images = extract_images_from_pdf(pdf_path)
-    if images:
-        for i, image in enumerate(images):
-            image_text = ocr_image(image)
-            text += f"\n[Image {i+1}]:\n{image_text}"
-    
-    # Preprocess text
-    tokenized_sentences = preprocess_text(text)
-    
-    # Convert tokenized sentences back to text format
-    final_text = "\n".join([" ".join(tokens) for tokens in tokenized_sentences])
-        # Use GPT-4 to refine the processed text
-    summarized_text = get_response(final_text)
-    return summarized_text
-
 
 if __name__ == "__main__":
     # Ensure correct usage
@@ -186,6 +188,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     pdf_path = sys.argv[1]
-    txt_path = sys.argv[2]
-    summarized_text = convert_pdf_to_txt(pdf_path, txt_path)
+    student_path = sys.argv[2]
+    summarized_text = get_response(pdf_path, student_path)
 

@@ -22,14 +22,19 @@ def upload_page():
 @app.route('/process', methods=['POST'])
 def process_pdf():
     pdf_file = request.files['pdf_file']
+    student_file = request.files['student_file']
     txt_filename = request.form['txt_filename']
 
     if pdf_file.filename == '':
+        return redirect(request.url)
+    if student_file.filename == '':
         return redirect(request.url)
 
     if pdf_file and allowed_file(pdf_file.filename):
         pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], pdf_file.filename)
         pdf_file.save(pdf_path)
+        student_path = os.path.join(app.config['UPLOAD_FOLDER'], student_file.filename)
+        student_file.save(student_path)
         dir_file = os.path.join(app.config["OUTPUT_FOLDER"], txt_filename)
         file_path = dir_file+'.txt'
         summarized_text = convert_pdf_to_txt(pdf_path, file_path)
