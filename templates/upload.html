@@ -10,10 +10,6 @@
     <div class="container">
         <h1>Upload PDF</h1>
         <form action="{{ url_for('process_pdf') }}" method="post" enctype="multipart/form-data">
-<<<<<<< HEAD
-            <input type="file" name="pdf_file" accept=".pdf" required>
-            <input type="file" name="student_file" accept=".pdf" required>
-=======
             <div class="custom-file-input">
                 <input type="file" name="pdf_file" accept=".pdf" id="pdf_file" required>
                 <label for="pdf_file">PDF File</label>
@@ -22,7 +18,6 @@
                 <input type="file" name="student_file" accept=".pdf" id="student_file" required>
                 <label for="student_file">Student File</label>
             </div>
->>>>>>> main
             <input type="text" name="txt_filename" placeholder="Enter output filename" required>
             <button type="submit">Upload and Process</button>
         </form>
